@@ -18,7 +18,7 @@ import (
 )
 
 func TestPositions(t *testing.T) {
-	path := "github.com/dave/dst/gendst/data"
+	path := "github.com/JfL0unch/dst/gendst/data"
 	conf := loader.Config{ParserMode: parser.ParseComments}
 	conf.Import(path)
 	prog, err := conf.Load()

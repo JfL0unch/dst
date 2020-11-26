@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"go/token"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator"
 )
 
 // This example demonstrates how to inspect the AST of a Go program.

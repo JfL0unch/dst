@@ -1,7 +1,6 @@
 module github.com/JfL0unch/dst
 
 require (
-	github.com/dave/dst v0.26.2
 	github.com/dave/jennifer v1.2.0
 	github.com/sergi/go-diff v1.0.0
 	github.com/stretchr/testify v1.6.1 // indirect

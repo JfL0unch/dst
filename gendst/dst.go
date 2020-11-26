@@ -43,7 +43,7 @@ func generateDst(names []string) error {
 
 func generateDstDecs(names []string) error {
 
-	path := "github.com/dave/dst/gendst/data"
+	path := "github.com/JfL0unch/dst/gendst/data"
 	conf := loader.Config{ParserMode: parser.ParseComments}
 	conf.Import(path)
 	prog, err := conf.Load()

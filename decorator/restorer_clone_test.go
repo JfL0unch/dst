@@ -14,7 +14,7 @@ import (
 func TestClone(t *testing.T) {
 	testPackageRestoresCorrectlyWithClone(
 		t,
-		"github.com/dave/dst/gendst/data",
+		"github.com/JfL0unch/dst/gendst/data",
 		"fmt",
 		"bytes",
 		"io",

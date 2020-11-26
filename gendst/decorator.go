@@ -9,7 +9,7 @@ import (
 
 // notest
 
-const DSTPATH = "github.com/dave/dst"
+const DSTPATH = "github.com/JfL0unch/dst"
 
 func generateDecorator(names []string) error {
 

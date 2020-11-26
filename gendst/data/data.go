@@ -8,7 +8,7 @@ import (
 
 // notest
 
-const DSTPATH = "github.com/dave/dst"
+const DSTPATH = "github.com/JfL0unch/dst"
 
 type Part interface{}
 
