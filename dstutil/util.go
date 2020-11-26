@@ -263,3 +263,17 @@ func NewInterface(fieldList *dst.FieldList) *dst.InterfaceType {
 		Incomplete: false,
 	}
 }
+
+
+func NewValSpec(name, typ string) *dst.ValueSpec {
+	return &dst.ValueSpec{Names: []*dst.Ident{dst.NewIdent(name)},
+		Type: dst.NewIdent(typ),
+	}
+}
+
+func NewVarDecl(name, typ string) *dst.GenDecl {
+	return &dst.GenDecl{
+		Tok:   token.VAR,
+		Specs: []dst.Spec{NewValSpec(name, typ)},
+	}
+}
