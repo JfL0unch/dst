@@ -3,7 +3,7 @@ package gopackages
 import (
 	"fmt"
 
-	"github.com/dave/dst/decorator/resolver"
+	"github.com/JfL0unch/dst/decorator/resolver"
 	"golang.org/x/tools/go/packages"
 )
 

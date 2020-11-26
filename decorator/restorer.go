@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator/resolver"
 )
 
 // NewRestorer returns a restorer.

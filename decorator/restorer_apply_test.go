@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver/guess"
-	"github.com/dave/dst/dstutil"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator/resolver/guess"
+	"github.com/JfL0unch/dst/dstutil"
 )
 
 func TestApply(t *testing.T) {

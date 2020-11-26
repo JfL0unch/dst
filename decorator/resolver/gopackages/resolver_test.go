@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dave/dst/decorator/resolver"
-	"github.com/dave/dst/decorator/resolver/gopackages"
+	"github.com/JfL0unch/dst/decorator/resolver"
+	"github.com/JfL0unch/dst/decorator/resolver/gopackages"
 )
 
 func TestRestorerResolver(t *testing.T) {

@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver/goast"
-	"github.com/dave/dst/decorator/resolver/guess"
-	"github.com/dave/dst/dstutil"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator/resolver/goast"
+	"github.com/JfL0unch/dst/decorator/resolver/guess"
+	"github.com/JfL0unch/dst/dstutil"
 	"golang.org/x/tools/go/loader"
 )
 

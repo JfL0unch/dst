@@ -3,7 +3,7 @@ package gobuild
 import (
 	"go/build"
 
-	"github.com/dave/dst/decorator/resolver"
+	"github.com/JfL0unch/dst/decorator/resolver"
 )
 
 func New(dir string) *RestorerResolver {

@@ -1,6 +1,6 @@
 package dstutil
 
-import "github.com/dave/dst"
+import "github.com/JfL0unch/dst"
 
 func decorations(n dst.Node) (before, after dst.SpaceType, points []DecorationPoint) {
 	switch n := n.(type) {

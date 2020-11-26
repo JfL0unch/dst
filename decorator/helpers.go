@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/dave/dst"
+	"github.com/JfL0unch/dst"
 )
 
 // Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should

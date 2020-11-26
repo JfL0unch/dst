@@ -3,7 +3,7 @@ package decorator
 import (
 	"go/ast"
 
-	"github.com/dave/dst"
+	"github.com/JfL0unch/dst"
 )
 
 func newMap() Map {

@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dave/dst/gendst/data"
+	"github.com/JfL0unch/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 	"golang.org/x/tools/go/loader"
 )

@@ -1,6 +1,6 @@
 package dstutil
 
-import "github.com/dave/dst"
+import "github.com/JfL0unch/dst"
 
 // Decorations returns information about all the decoration attachment points associated with a node
 func Decorations(n dst.Node) (before, after dst.SpaceType, info []DecorationPoint) {

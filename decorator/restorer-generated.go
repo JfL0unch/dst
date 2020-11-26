@@ -2,7 +2,7 @@ package decorator
 
 import (
 	"fmt"
-	"github.com/dave/dst"
+	"github.com/JfL0unch/dst"
 	"go/ast"
 	"go/token"
 )

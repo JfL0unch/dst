@@ -1,6 +1,6 @@
 package simple
 
-import "github.com/dave/dst/decorator/resolver"
+import "github.com/JfL0unch/dst/decorator/resolver"
 
 func New(m map[string]string) RestorerResolver {
 	return RestorerResolver(m)

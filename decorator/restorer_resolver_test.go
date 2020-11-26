@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver/gopackages"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator/resolver/gopackages"
 	"golang.org/x/tools/go/packages"
 )
 

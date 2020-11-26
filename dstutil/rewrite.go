@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/dave/dst"
+	"github.com/JfL0unch/dst"
 )
 
 // An ApplyFunc is invoked by Apply for each node n, even if n is nil,

@@ -3,8 +3,8 @@ package decorator
 import (
 	"testing"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver/simple"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator/resolver/simple"
 	"golang.org/x/tools/go/packages"
 )
 

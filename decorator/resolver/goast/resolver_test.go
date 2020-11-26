@@ -4,8 +4,8 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator"
 )
 
 func TestGoAstDecoratorResolver(t *testing.T) {

@@ -9,10 +9,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver"
-	"github.com/dave/dst/decorator/resolver/gotypes"
-	"github.com/dave/dst/dstutil"
+	"github.com/JfL0unch/dst"
+	"github.com/JfL0unch/dst/decorator/resolver"
+	"github.com/JfL0unch/dst/decorator/resolver/gotypes"
+	"github.com/JfL0unch/dst/dstutil"
 	"golang.org/x/tools/go/packages"
 )
 

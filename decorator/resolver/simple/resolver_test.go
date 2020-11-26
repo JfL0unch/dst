@@ -3,8 +3,8 @@ package simple_test
 import (
 	"testing"
 
-	"github.com/dave/dst/decorator/resolver"
-	"github.com/dave/dst/decorator/resolver/simple"
+	"github.com/JfL0unch/dst/decorator/resolver"
+	"github.com/JfL0unch/dst/decorator/resolver/simple"
 )
 
 func TestRestorerResolver(t *testing.T) {

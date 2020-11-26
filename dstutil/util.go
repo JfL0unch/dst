@@ -1,6 +1,6 @@
 package dstutil
 
-import "github.com/dave/dst"
+import "github.com/JfL0unch/dst"
 
 // Unparen returns e with any enclosing parentheses stripped.
 func Unparen(e dst.Expr) dst.Expr {

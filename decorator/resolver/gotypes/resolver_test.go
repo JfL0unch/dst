@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dave/dst/decorator/resolver/gotypes"
+	"github.com/JfL0unch/dst/decorator/resolver/gotypes"
 	"golang.org/x/tools/go/packages"
 )
 

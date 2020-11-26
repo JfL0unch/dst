@@ -3,7 +3,7 @@ package main
 import (
 	"sort"
 
-	"github.com/dave/dst/gendst/data"
+	"github.com/JfL0unch/dst/gendst/data"
 )
 
 // notest
