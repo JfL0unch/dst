@@ -80,6 +80,11 @@ type Cursor struct {
 // Node returns the current Node.
 func (c *Cursor) Node() dst.Node { return c.node }
 
+// Similarity returns similarity between the current Node and node n.
+func (c *Cursor) Similarity(n dst.Node) (int,int) {
+	return similarity(c.Node(),n)
+}
+
 // Parent returns the parent of the current Node.
 func (c *Cursor) Parent() dst.Node { return c.parent }
 
