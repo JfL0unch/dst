@@ -10,18 +10,25 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 	switch x:= node.(type){
 	case *dst.GenDecl:
 		if n,ok := targetNode.(*dst.GenDecl);ok{
-			sim,hit := similarityGenDecl(x,n)
+			sim,hit := similarityGenDecl(*x,*n)
 			return sim,hit
 		}else{
 			return 0,0
 		}
 
+	case *dst.InterfaceType:
+		if n,ok := targetNode.(*dst.InterfaceType);ok{
+			sim,hit := similarityInterfaceType(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
 	}
 
 	return 0,0
 }
 
-func similarityGenDecl(n1,n2 *dst.GenDecl) (int,int){
+func similarityGenDecl(n1,n2 dst.GenDecl) (int,int){
 	sim,hit := similarityToken(n1.Tok, n2.Tok)
 
 	for k,v := range n1.Specs{
@@ -184,4 +191,38 @@ func similarityObject(n1,n2 dst.Object)(int,int){
 
 func similarityExpr(n1,n2 dst.Expr)(int,int){
 	return similarity(n1,n2)
+}
+
+func similarityInterfaceType(n1,n2 dst.InterfaceType)(int,int){
+	if n1.Methods != nil && n2.Methods!=nil{
+		sim,hit := similarityFieldList(*n1.Methods,*n2.Methods)
+		return sim,hit
+	}
+	return 0,0
+}
+
+func similarityFieldList(n1,n2 dst.FieldList)(int,int){
+
+	sim,hit := 0,0
+	for k,v := range n1.List{
+		if k >= len(n2.List){
+			break
+		}
+		s,h := similarityField(*v,*n2.List[k])
+		sim,hit = sim+s,hit+h
+	}
+
+	return sim,hit
+}
+
+func similarityField(n1,n2 dst.Field)(int,int){
+
+	sim,hit := 0,0
+
+	if n1.Tag != nil && n2.Tag != nil{
+		s,h := similarityBasicLit(*n1.Tag,*n2.Tag)
+		sim,hit = sim+s,hit+h
+	}
+
+	return sim,hit
 }
