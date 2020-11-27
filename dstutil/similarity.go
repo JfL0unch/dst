@@ -23,6 +23,39 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 		}else{
 			return 0,0
 		}
+
+	case *dst.Field:
+		if n,ok := targetNode.(*dst.Field);ok{
+			sim,hit := similarityField(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+
+	case *dst.SelectorExpr:
+		if n,ok := targetNode.(*dst.SelectorExpr);ok{
+			sim,hit := similaritySelectorExpr(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+
+	case *dst.StarExpr:
+		if n,ok := targetNode.(*dst.StarExpr);ok{
+			sim,hit := similarityStarExpr(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+
+	case *dst.ValueSpec:
+		if n,ok := targetNode.(*dst.ValueSpec);ok{
+			sim,hit := similarityValueSpec(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+
 	}
 
 	return 0,0
@@ -132,6 +165,20 @@ func similarityImportSpec(n1,n2 dst.ImportSpec) (int,int){
 	return sim,hit
 }
 
+func similaritySelectorExpr(n1,n2 dst.SelectorExpr) (int,int){
+	sim,hit := 0,0
+
+	if n1.Sel !=nil && n2.Sel != nil{
+		s,h := similarityIdent(*n1.Sel,*n2.Sel)
+		sim,hit = sim+s,hit+h
+	}
+
+	s,h := similarityExpr(n1.X,n2.X)
+	sim,hit = sim+s,hit+h
+
+	return sim,hit
+}
+
 func similarityIdent(n1,n2 dst.Ident) (int,int){
 	sim,hit := similarityString(n1.Name,n2.Name)
 
@@ -223,6 +270,19 @@ func similarityField(n1,n2 dst.Field)(int,int){
 		s,h := similarityBasicLit(*n1.Tag,*n2.Tag)
 		sim,hit = sim+s,hit+h
 	}
+
+	if len(n1.Names)>0{
+		for k,ident := range n1.Names{
+			if k >= len(n2.Names){
+				break
+			}
+			s,h := similarityIdent(*ident, *n2.Names[k])
+			sim,hit = sim+s,hit+h
+		}
+	}
+
+	s,h := similarityExpr(n1.Type, n2.Type)
+	sim,hit = sim+s,hit+h
 
 	return sim,hit
 }

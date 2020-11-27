@@ -1,6 +1,7 @@
 package dstutil
 
 import (
+	"fmt"
 	"github.com/JfL0unch/dst"
 	"github.com/JfL0unch/dst/decorator"
 	"go/parser"
@@ -92,15 +93,85 @@ var cnt int32
 
 	dstFile = Apply(dstFile, pre, nil).(*dst.File)
 
-	//restoredFset, restoredFile, err := decorator.RestoreFile(dstFile)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//var buf bytes.Buffer
-	//if err := format.Node(&buf, restoredFset, restoredFile); err != nil {
-	//	panic(err)
-	//}
-	//
-	//got := buf.String()
+}
+
+
+
+func TestCursor_Similarity_Case1(t *testing.T) {
+
+	input := `
+package service
+
+import (
+	"context"
+
+	"svcGenerator/data/proto/v1"
+)
+
+type CommonSvcService interface {
+	IdentifyFetch(ctx context.Context, reqproto *commonproto.IdentifyFetchReqProto) (*commonproto.IdentifyFetchRespProto, error)
+
+	//{{template9}}
+}
+var cnt int32
+`
+	pre := func(c *Cursor) bool {
+
+		names :=make([]*dst.Ident,0)
+		names = append(names,&dst.Ident{
+			Name: "IdentifyFetch",
+		})
+
+
+		params := make([]*dst.Field,0)
+		params = append(params,&dst.Field{
+			Names: []*dst.Ident{NewIdent("ctx")},
+			Type: &dst.SelectorExpr{
+				X: &dst.Ident{Name: "context" },
+				Sel: &dst.Ident{Name: "Context"},
+			},
+		})
+		params = append(params,&dst.Field{
+			Names: []*dst.Ident{NewIdent("ctx")},
+			Type: &dst.StarExpr{
+				X: &dst.SelectorExpr{
+					X: &dst.Ident{Name: "commonproto"},
+					Sel: &dst.Ident{Name: "IdentifyFetchReqProto"},
+				},
+			},
+		})
+		fieldListParams := &dst.FieldList{
+			List: params,
+		}
+
+		field := &dst.Field{
+			Names:  names,
+			Type: &dst.FuncType{
+				Func: false,
+				Params: fieldListParams,
+			},
+			Tag: nil,
+		}
+
+		if sim, hit := c.Similarity(field);sim !=0{
+			fmt.Printf("got %d,expect %d",sim,hit)
+
+		}
+
+		return true
+	}
+
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "", input, parser.ParseComments)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dstFile, err := decorator.DecorateFile(fset, f)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dstFile = Apply(dstFile, pre, nil).(*dst.File)
+
 }
