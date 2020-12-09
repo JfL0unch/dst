@@ -1,13 +1,18 @@
 package dstutil
 
 import (
+	"errors"
+	"fmt"
 	"github.com/JfL0unch/dst"
 	"go/token"
+	"reflect"
 )
 
 // similarity return similarity between node and n.
 func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 	switch x:= node.(type){
+	case *dst.File:
+		// do nothing
 	case *dst.GenDecl:
 		if n,ok := targetNode.(*dst.GenDecl);ok{
 			sim,hit := similarityGenDecl(*x,*n)
@@ -15,7 +20,6 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 		}else{
 			return 0,0
 		}
-
 	case *dst.InterfaceType:
 		if n,ok := targetNode.(*dst.InterfaceType);ok{
 			sim,hit := similarityInterfaceType(*x,*n)
@@ -31,7 +35,34 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 		}else{
 			return 0,0
 		}
-
+	case *dst.FieldList:
+		if n,ok := targetNode.(*dst.FieldList);ok{
+			sim,hit := similarityFieldList(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.StructType:
+		if n,ok := targetNode.(*dst.StructType);ok{
+			sim,hit := similarityStructType(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.Ident:
+		if n,ok := targetNode.(*dst.Ident);ok{
+			sim,hit := similarityIdent(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.BasicLit:
+		if n,ok := targetNode.(*dst.BasicLit);ok{
+			sim,hit := similarityBasicLit(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
 	case *dst.SelectorExpr:
 		if n,ok := targetNode.(*dst.SelectorExpr);ok{
 			sim,hit := similaritySelectorExpr(*x,*n)
@@ -39,7 +70,20 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 		}else{
 			return 0,0
 		}
-
+	case *dst.ImportSpec:
+		if n,ok := targetNode.(*dst.ImportSpec);ok{
+			sim,hit := similarityImportSpec(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.TypeSpec:
+		if n,ok := targetNode.(*dst.TypeSpec);ok{
+			sim,hit := similarityTypeSpec(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
 	case *dst.StarExpr:
 		if n,ok := targetNode.(*dst.StarExpr);ok{
 			sim,hit := similarityStarExpr(*x,*n)
@@ -54,6 +98,28 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 			return sim,hit
 		}else{
 			return 0,0
+		}
+	case *dst.FuncDecl:
+		if n,ok := targetNode.(*dst.FuncDecl);ok{
+			sim,hit := similarityFuncDecl(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.FuncType:
+		if n,ok := targetNode.(*dst.FuncType);ok{
+			sim,hit := similarityFuncType(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.Package:
+		// do nothing
+
+	default:
+		if node != nil{
+			v := reflect.ValueOf(node)
+			panic(fmt.Errorf("undefined dst.Node %s",v.Type()))
 		}
 
 	}
@@ -75,6 +141,78 @@ func similarityGenDecl(n1,n2 dst.GenDecl) (int,int){
 	return sim,hit
 }
 
+
+func similarityFuncDecl(n1,n2 dst.FuncDecl) (int,int){
+	sim,hit :=0,0
+	if n1.Name != nil && n2.Name != nil{
+		s,h := similarityIdent(*n1.Name,*n2.Name)
+		sim,hit = sim+s,hit+h
+	}
+
+	if n1.Type != nil && n2.Type != nil{
+		s,h := similarityFuncType(*n1.Type,*n2.Type)
+		sim,hit = sim+s,hit+h
+	}
+
+	if n1.Body != nil && n2.Body != nil{
+		s,h := similarityBlockStmt(*n1.Body,*n2.Body)
+		sim,hit = sim+s,hit+h
+	}
+
+	if n1.Recv != nil && n2.Recv != nil{
+		for k,v := range n1.Recv.List{
+			if k >= len(n2.Recv.List){
+				break
+			}
+			s,h := similarityField(*v,*n2.Recv.List[k])
+			sim,hit = sim+s,hit+h
+		}
+	}
+
+
+	return sim,hit
+}
+
+
+func similarityFuncType(n1,n2 dst.FuncType) (int,int){
+	sim,hit :=0,0
+	if n1.Params != nil && n2.Params != nil{
+		for k,v := range n1.Params.List{
+			if k >= len(n2.Params.List){
+				break
+			}
+			s,h := similarityField(*v,*n2.Params.List[k])
+			sim,hit = sim+s,hit+h
+		}
+	}
+
+	if n1.Results != nil && n2.Results != nil{
+		for k,v := range n1.Results.List{
+			if k >= len(n2.Results.List){
+				break
+			}
+			s,h := similarityField(*v,*n2.Results.List[k])
+			sim,hit = sim+s,hit+h
+		}
+	}
+
+	return sim,hit
+}
+
+
+func similarityBlockStmt(n1,n2 dst.BlockStmt) (int,int){
+	sim,hit :=0,0
+	for k,v := range n1.List{
+		if k >= len(n2.List){
+			break
+		}
+		s,h := similarityStmt(v,n2.List[k])
+		sim,hit = sim+s,hit+h
+	}
+
+	return sim,hit
+}
+
 func similarityToken(n1,n2 token.Token) (int,int){
 	if n1 == n2 {
 		return 1,1
@@ -83,6 +221,70 @@ func similarityToken(n1,n2 token.Token) (int,int){
 	}
 }
 
+
+func similarityDeclStmt(n1,n2 dst.DeclStmt) (int,int){
+	sim,hit := similarityDecl(n1.Decl,n2.Decl)
+
+	return sim,hit
+}
+
+
+func similarityAssignStmt(n1,n2 dst.AssignStmt) (int,int){
+	sim,hit := 0,0
+	for k,v := range n1.Lhs{
+		if k >= len(n2.Lhs){
+			break
+		}
+		s,h := similarityExpr(v,n2.Lhs[k])
+		sim,hit = sim+s,hit+h
+	}
+
+	return sim,hit
+}
+
+
+func similarityDecl(n1,n2 dst.Decl) (int,int) {
+	switch x1 := n1.(type) {
+	case *dst.GenDecl:
+		if x2, ok := n2.(*dst.GenDecl); ok {
+			return similarityGenDecl(*x1, *x2)
+		} else {
+			return 0, 1
+		}
+
+	default:
+		if n1 != nil{
+			v := reflect.ValueOf(n1)
+			panic(fmt.Errorf("undefined Decl: %s",v.Type()))
+		}
+
+	}
+	return 0,0
+}
+
+func similarityStmt(n1,n2 dst.Stmt) (int,int){
+	switch x1:= n1.(type){
+	case *dst.DeclStmt:
+		if x2,ok:= n2.(*dst.DeclStmt);ok{
+			return similarityDeclStmt(*x1,*x2)
+		}else{
+			return 0,1
+		}
+
+	case *dst.AssignStmt:
+		if x2,ok:= n2.(*dst.AssignStmt);ok{
+			return similarityAssignStmt(*x1,*x2)
+		}else{
+			return 0,1
+		}
+
+	default:
+		panic(errors.New("undefined stmt"))
+
+	}
+
+	return 0,0
+}
 
 func similaritySpec(n1,n2 dst.Spec) (int,int){
 	switch x1:= n1.(type){
@@ -106,6 +308,9 @@ func similaritySpec(n1,n2 dst.Spec) (int,int){
 		}else{
 			return 0,1
 		}
+	default:
+		v := reflect.ValueOf(n1)
+		panic(fmt.Errorf("undefined spec:%s",v.Type()))
 
 	}
 
@@ -172,6 +377,15 @@ func similaritySelectorExpr(n1,n2 dst.SelectorExpr) (int,int){
 		s,h := similarityIdent(*n1.Sel,*n2.Sel)
 		sim,hit = sim+s,hit+h
 	}
+
+	s,h := similarityExpr(n1.X,n2.X)
+	sim,hit = sim+s,hit+h
+
+	return sim,hit
+}
+
+func similarityStarExpr(n1,n2 dst.StarExpr)(int,int){
+	sim,hit := 0,0
 
 	s,h := similarityExpr(n1.X,n2.X)
 	sim,hit = sim+s,hit+h
@@ -261,6 +475,24 @@ func similarityFieldList(n1,n2 dst.FieldList)(int,int){
 
 	return sim,hit
 }
+
+
+func similarityStructType(n1,n2 dst.StructType)(int,int){
+	sim,hit := 0,0
+	if n1.Fields != nil && n2.Fields != nil{
+		for k,field := range n1.Fields.List{
+			if k >= len(n2.Fields.List){
+				break
+			}
+			s,h := similarityField(*field, *n2.Fields.List[k])
+			sim,hit = sim+s,hit+h
+		}
+	}
+
+
+	return sim,hit
+}
+
 
 func similarityField(n1,n2 dst.Field)(int,int){
 
