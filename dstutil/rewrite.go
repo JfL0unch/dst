@@ -73,6 +73,24 @@ func Find(root dst.Node, pre ApplyFunc) (dst.Node,bool) {
 
 }
 
+func Rewrite(root dst.Node, pre ApplyFunc) (dst.Node,bool) {
+	parent := &struct{ dst.Node }{root}
+
+	defer func() {
+		if r := recover(); r != nil {
+			panic(r)
+		}
+	}()
+
+	a := &application{pre: pre, post:nil}
+	if _,found := a.find(parent, "Node", nil, root);found{
+		return root,true
+	}
+
+	return root,false
+
+}
+
 var abort = new(int) // singleton, to signal termination of Apply
 
 // A Cursor describes a node encountered during Apply.

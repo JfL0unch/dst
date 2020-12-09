@@ -1,7 +1,6 @@
 package dstutil
 
 import (
-	"errors"
 	"fmt"
 	"github.com/JfL0unch/dst"
 	"go/token"
@@ -291,27 +290,28 @@ func similarityDecl(n1,n2 dst.Decl) (int,int) {
 }
 
 func similarityStmt(n1,n2 dst.Stmt) (int,int){
-	switch x1:= n1.(type){
-	case *dst.DeclStmt:
-		if x2,ok:= n2.(*dst.DeclStmt);ok{
-			return similarityDeclStmt(*x1,*x2)
-		}else{
-			return 0,1
-		}
-
-	case *dst.AssignStmt:
-		if x2,ok:= n2.(*dst.AssignStmt);ok{
-			return similarityAssignStmt(*x1,*x2)
-		}else{
-			return 0,1
-		}
-
-	default:
-		panic(errors.New("undefined stmt"))
-
-	}
-
-	return 0,0
+	return similarity(n1,n2)
+	//switch x1:= n1.(type){
+	//case *dst.DeclStmt:
+	//	if x2,ok:= n2.(*dst.DeclStmt);ok{
+	//		return similarityDeclStmt(*x1,*x2)
+	//	}else{
+	//		return 0,1
+	//	}
+	//
+	//case *dst.AssignStmt:
+	//	if x2,ok:= n2.(*dst.AssignStmt);ok{
+	//		return similarityAssignStmt(*x1,*x2)
+	//	}else{
+	//		return 0,1
+	//	}
+	//
+	//default:
+	//	panic(errors.New("undefined stmt"))
+	//
+	//}
+	//
+	//return 0,0
 }
 
 func similaritySpec(n1,n2 dst.Spec) (int,int){
