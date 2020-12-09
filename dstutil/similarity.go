@@ -13,6 +13,8 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 	switch x:= node.(type){
 	case *dst.File:
 		// do nothing
+	case *dst.Package:
+		// do nothing
 	case *dst.GenDecl:
 		if n,ok := targetNode.(*dst.GenDecl);ok{
 			sim,hit := similarityGenDecl(*x,*n)
@@ -70,6 +72,13 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 		}else{
 			return 0,0
 		}
+	case *dst.UnaryExpr:
+		if n,ok := targetNode.(*dst.UnaryExpr);ok{
+			sim,hit := similarityUnaryExpr(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
 	case *dst.ImportSpec:
 		if n,ok := targetNode.(*dst.ImportSpec);ok{
 			sim,hit := similarityImportSpec(*x,*n)
@@ -113,8 +122,27 @@ func similarity(node dst.Node,targetNode dst.Node) (int,int) {
 		}else{
 			return 0,0
 		}
-	case *dst.Package:
-		// do nothing
+	case *dst.CompositeLit:
+		if n,ok := targetNode.(*dst.CompositeLit);ok{
+			sim,hit := similarityCompositeLit(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.ReturnStmt:
+		if n,ok := targetNode.(*dst.ReturnStmt);ok{
+			sim,hit := similarityReturnStmt(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
+	case *dst.BlockStmt:
+		if n,ok := targetNode.(*dst.BlockStmt);ok{
+			sim,hit := similarityBlockStmt(*x,*n)
+			return sim,hit
+		}else{
+			return 0,0
+		}
 
 	default:
 		if node != nil{
@@ -287,35 +315,56 @@ func similarityStmt(n1,n2 dst.Stmt) (int,int){
 }
 
 func similaritySpec(n1,n2 dst.Spec) (int,int){
-	switch x1:= n1.(type){
-	case *dst.TypeSpec:
-		if x2,ok:= n2.(*dst.TypeSpec);ok{
-			return similarityTypeSpec(*x1,*x2)
-		}else{
-			return 0,1
-		}
+	//switch x1:= n1.(type){
+	//case *dst.TypeSpec:
+	//	if x2,ok:= n2.(*dst.TypeSpec);ok{
+	//		return similarityTypeSpec(*x1,*x2)
+	//	}else{
+	//		return 0,1
+	//	}
+	//
+	//case *dst.ValueSpec:
+	//	if x2,ok:= n2.(*dst.ValueSpec);ok{
+	//		return similarityValueSpec(*x1,*x2)
+	//	}else{
+	//		return 0,1
+	//	}
+	//
+	//case *dst.ImportSpec:
+	//	if x2,ok:= n2.(*dst.ImportSpec);ok{
+	//		return similarityImportSpec(*x1,*x2)
+	//	}else{
+	//		return 0,1
+	//	}
+	//default:
+	//	v := reflect.ValueOf(n1)
+	//	panic(fmt.Errorf("undefined spec:%s",v.Type()))
+	//
+	//}
+	//
+	//return 0,0
 
-	case *dst.ValueSpec:
-		if x2,ok:= n2.(*dst.ValueSpec);ok{
-			return similarityValueSpec(*x1,*x2)
-		}else{
-			return 0,1
-		}
-
-	case *dst.ImportSpec:
-		if x2,ok:= n2.(*dst.ImportSpec);ok{
-			return similarityImportSpec(*x1,*x2)
-		}else{
-			return 0,1
-		}
-	default:
-		v := reflect.ValueOf(n1)
-		panic(fmt.Errorf("undefined spec:%s",v.Type()))
-
-	}
-
-	return 0,0
+	return similarity(n1,n2)
 }
+
+
+func similarityExpr(n1,n2 dst.Expr)(int,int){
+
+	return similarity(n1,n2)
+	//switch x1 := n1.(type){
+	//case *dst.UnaryExpr:
+	//	if x2,ok:= n2.(*dst.UnaryExpr);ok{
+	//		return similarityUnaryExpr(*x1,*x2)
+	//	}else{
+	//		return 0,1
+	//	}
+	//default:
+	//	v := reflect.ValueOf(n1)
+	//	panic(fmt.Errorf("undefined expr:%s",v.Type()))
+	//}
+	//return similarity(n1,n2)
+}
+
 
 func similarityTypeSpec(n1,n2 dst.TypeSpec) (int,int){
 	sim,hit :=0,0
@@ -408,6 +457,43 @@ func similarityIdent(n1,n2 dst.Ident) (int,int){
 }
 
 
+func similarityCompositeLit(n1,n2 dst.CompositeLit) (int,int){
+	sim,hit := similarityExpr(n1.Type,n2.Type)
+
+	for k,v := range n1.Elts{
+		if k >= len(n2.Elts){
+			break
+		}
+		s,h := similarityExpr(v,n2.Elts[k])
+		sim,hit = sim+s,hit+h
+	}
+
+	return sim,hit
+}
+
+
+func similarityReturnStmt(n1,n2 dst.ReturnStmt) (int,int){
+	sim,hit := 0,0
+	for k,v := range n1.Results{
+		if k >= len(n2.Results){
+			break
+		}
+		s,h := similarityExpr(v,n2.Results[k])
+		sim,hit = sim+s,hit+h
+	}
+	return sim,hit
+}
+
+
+func similarityUnaryExpr(n1,n2 dst.UnaryExpr) (int,int){
+	sim,hit := similarityExpr(n1.X,n2.X)
+
+	s,h := similarityToken(n1.Op,n2.Op)
+	sim,hit = sim+s,hit+h
+
+	return sim,hit
+}
+
 func similarityBasicLit(n1,n2 dst.BasicLit) (int,int){
 	sim,hit := similarityInt(int(n1.Kind),int(n2.Kind))
 
@@ -448,10 +534,6 @@ func similarityObject(n1,n2 dst.Object)(int,int){
 	sim,hit = sim+s,hit+h
 
 	return sim,hit
-}
-
-func similarityExpr(n1,n2 dst.Expr)(int,int){
-	return similarity(n1,n2)
 }
 
 func similarityInterfaceType(n1,n2 dst.InterfaceType)(int,int){
