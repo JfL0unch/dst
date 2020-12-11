@@ -1,7 +1,6 @@
 package dstutil
 
 import (
-	"fmt"
 	"github.com/JfL0unch/dst"
 	"github.com/JfL0unch/dst/decorator"
 	"go/parser"
@@ -9,26 +8,19 @@ import (
 	"testing"
 )
 
-func TestCursor_Similarity(t *testing.T) {
+func TestCursor_Contain_Case1(t *testing.T) {
 
 	input := `
+// x
 package service
 
-import (
-	"context"
 
-	"svcGenerator/data/proto/v1"
-)
-
-type CommonSvcService interface {
-	IdentifyFetch(ctx context.Context, reqproto *commonproto.IdentifyFetchReqProto) (*commonproto.IdentifyFetchRespProto, error)
-
-	//{{template9}}
-}
+// y
 var cnt int32
 `
 	pre := func(c *Cursor) bool {
 
+		// 'type CommonSvcService interface{}'
 		typeSpec := &dst.TypeSpec{
 			Name: &dst.Ident{Name: "CommonSvcService"},
 			Assign:  false,
@@ -40,7 +32,10 @@ var cnt int32
 			Tok:   token.TYPE,
 			Specs: xSpecs,
 		}
+		_=x
 
+
+		// 'var cnt int32'
 		names := make([]*dst.Ident,0)
 		names = append(names,&dst.Ident{
 			Name:"cnt",
@@ -56,28 +51,19 @@ var cnt int32
 			Specs: ySpecs,
 		}
 
-		if sim, hit := c.Similarity(x);sim >0{
-			if sim != 4 {
-				t.Errorf("got %d,expect %d",sim,4)
-			}
+		//if !c.Contain(x){
+		//	t.Errorf("got %s,expect %s","non-contained","contained")
+		//
+		//}
 
-			if hit != 4 {
-				t.Errorf("got %d,expect %d",hit,3)
-			}
-
+		if c.Contain(y){
+			t.Errorf("got %s,%s",c.Node().Decorations(),"contained")
+			return false
+		}else{
+			t.Errorf("got %s,%s",c.Node().Decorations(),"non-contained")
+			return true
 		}
 
-		if sim, hit := c.Similarity(y);sim>0{
-			if sim != 3 {
-				t.Errorf("got %d,expect %d",sim,3)
-			}
-
-			if hit != 3 {
-				t.Errorf("got %d,expect %d",hit,3)
-			}
-		}
-
-		return true
 	}
 
 	fset := token.NewFileSet()
@@ -97,7 +83,7 @@ var cnt int32
 
 
 
-func TestCursor_Similarity_Case1(t *testing.T) {
+func TestCursor_Contain_Case2(t *testing.T) {
 
 	input := `
 package service
@@ -114,6 +100,7 @@ type CommonSvcService interface {
 `
 	pre := func(c *Cursor) bool {
 
+		// `IdentifyFetch(ctx context.Context, reqproto *commonproto.IdentifyFetchReqProto){}'
 		names :=make([]*dst.Ident,0)
 		names = append(names,&dst.Ident{
 			Name: "IdentifyFetch",
@@ -147,10 +134,8 @@ type CommonSvcService interface {
 			},
 		}
 
-		if sim, hit := c.Similarity(field);sim !=0{
-			fmt.Printf("parent %s\n,node %s\n,name %s\n",c.Parent(),c.Node(),c.Name())
-			fmt.Printf("got %d,expect %d\n",sim,hit)
-
+		if !c.Contain(field){
+			t.Errorf("got %s,expect %s","non-contained","contained")
 		}
 
 		return true

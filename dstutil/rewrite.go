@@ -124,6 +124,11 @@ func (c *Cursor) Similarity(n dst.Node) (int, int) {
 	return similarity(c.Node(), n)
 }
 
+// Contain returns if c.Node Contain n,true or false
+func (c *Cursor) Contain(n dst.Node) bool {
+	return contain(c.Node(), n)
+}
+
 // Parent returns the parent of the current Node.
 func (c *Cursor) Parent() dst.Node { return c.parent }
 
