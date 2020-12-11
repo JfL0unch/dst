@@ -6,6 +6,7 @@ package dstutil
 
 import (
 	"fmt"
+	"runtime"
 
 	"reflect"
 	"sort"
@@ -55,7 +56,7 @@ func Apply(root dst.Node, pre, post ApplyFunc) (result dst.Node) {
 	return
 }
 
-func Find(root dst.Node, pre ApplyFunc) (dst.Node,bool) {
+func Find(root dst.Node, pre ApplyFunc) (dst.Node, bool) {
 	parent := &struct{ dst.Node }{root}
 
 	defer func() {
@@ -64,30 +65,32 @@ func Find(root dst.Node, pre ApplyFunc) (dst.Node,bool) {
 		}
 	}()
 
-	a := &application{pre: pre, post:nil}
-	if item,found := a.find(parent, "Node", nil, root);found{
-		return item,true
+	a := &application{pre: pre, post: nil}
+	if item, found := a.find(parent, "Node", nil, root); found {
+		return item, true
 	}
 
-	return nil,false
+	return nil, false
 
 }
 
-func Rewrite(root dst.Node, pre ApplyFunc) (dst.Node,bool) {
+func Rewrite(root dst.Node, pre ApplyFunc) (dst.Node, bool) {
 	parent := &struct{ dst.Node }{root}
 
 	defer func() {
-		if r := recover(); r != nil {
-			panic(r)
+		if rec := recover(); rec != nil {
+			var buf []byte
+			runtime.Stack(buf, false)
+			fmt.Printf("%s", buf)
 		}
 	}()
 
-	a := &application{pre: pre, post:nil}
-	if _,found := a.find(parent, "Node", nil, root);found{
-		return root,true
+	a := &application{pre: pre, post: nil}
+	if _, found := a.find(parent, "Node", nil, root); found {
+		return root, true
 	}
 
-	return root,false
+	return root, false
 
 }
 
@@ -117,8 +120,8 @@ type Cursor struct {
 func (c *Cursor) Node() dst.Node { return c.node }
 
 // Similarity returns similarity between the current Node and node n.
-func (c *Cursor) Similarity(n dst.Node) (int,int) {
-	return similarity(c.Node(),n)
+func (c *Cursor) Similarity(n dst.Node) (int, int) {
+	return similarity(c.Node(), n)
 }
 
 // Parent returns the parent of the current Node.
@@ -224,7 +227,8 @@ type application struct {
 	cursor    Cursor
 	iter      iterator
 }
-func  (a *application) CursorNode() dst.Node {
+
+func (a *application) CursorNode() dst.Node {
 	return a.cursor.Node()
 }
 func (a *application) apply(parent dst.Node, name string, iter *iterator, n dst.Node) {
@@ -475,7 +479,7 @@ func (a *application) apply(parent dst.Node, name string, iter *iterator, n dst.
 // 如果找到，返回true
 // 如果没有找到,返回false
 // pre 返回true,表示找到，则停止find
-func (a *application) find(parent dst.Node, name string, iter *iterator, n dst.Node) (dst.Node,bool) {
+func (a *application) find(parent dst.Node, name string, iter *iterator, n dst.Node) (dst.Node, bool) {
 	// convert typed nil into untyped nil
 	if v := reflect.ValueOf(n); v.Kind() == reflect.Ptr && v.IsNil() {
 		n = nil
@@ -488,7 +492,7 @@ func (a *application) find(parent dst.Node, name string, iter *iterator, n dst.N
 	a.cursor.node = n
 
 	if a.pre != nil && a.pre(&a.cursor) { // 找到了
-		return a.cursor.Node(),true
+		return a.cursor.Node(), true
 	}
 
 	// walk children
@@ -498,19 +502,19 @@ func (a *application) find(parent dst.Node, name string, iter *iterator, n dst.N
 		// nothing to do
 
 	case *dst.Field:
-		if item,found := a.findList(n, "Names");found{
-			return item,true
+		if item, found := a.findList(n, "Names"); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Type", nil, n.Type);found{
-			return item,true
+		if item, found := a.find(n, "Type", nil, n.Type); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Tag", nil, n.Tag);found{
-			return item,true
+		if item, found := a.find(n, "Tag", nil, n.Tag); found {
+			return item, true
 		}
 
 	case *dst.FieldList:
-		if item,found := a.findList(n, "List");found{
-			 return item,true
+		if item, found := a.findList(n, "List"); found {
+			return item, true
 		}
 
 	// Expressions
@@ -518,141 +522,141 @@ func (a *application) find(parent dst.Node, name string, iter *iterator, n dst.N
 		// nothing to do
 
 	case *dst.Ellipsis:
-		if item,found := a.find(n, "Elt", nil, n.Elt);found{
-			 return item,true
+		if item, found := a.find(n, "Elt", nil, n.Elt); found {
+			return item, true
 		}
 
 	case *dst.FuncLit:
-		if item,found := a.find(n, "Type", nil, n.Type);found{
-			 return item,true
+		if item, found := a.find(n, "Type", nil, n.Type); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
 
 	case *dst.CompositeLit:
-		if item,found := a.find(n, "Type", nil, n.Type);found{
-			 return item,true
+		if item, found := a.find(n, "Type", nil, n.Type); found {
+			return item, true
 		}
-		if item,found := a.findList(n, "Elts");found{
-			 return item,true
+		if item, found := a.findList(n, "Elts"); found {
+			return item, true
 		}
 
 	case *dst.ParenExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
 
 	case *dst.SelectorExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Sel", nil, n.Sel);found{
-			 return item,true
+		if item, found := a.find(n, "Sel", nil, n.Sel); found {
+			return item, true
 		}
 
 	case *dst.IndexExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Index", nil, n.Index);found{
-			 return item,true
+		if item, found := a.find(n, "Index", nil, n.Index); found {
+			return item, true
 		}
 
 	case *dst.SliceExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Low", nil, n.Low);found{
-			 return item,true
+		if item, found := a.find(n, "Low", nil, n.Low); found {
+			return item, true
 		}
-		if item,found := a.find(n, "High", nil, n.High);found{
-			 return item,true
+		if item, found := a.find(n, "High", nil, n.High); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Max", nil, n.Max);found{
-			 return item,true
+		if item, found := a.find(n, "Max", nil, n.Max); found {
+			return item, true
 		}
 
 	case *dst.TypeAssertExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Type", nil, n.Type);found{
-			 return item,true
+		if item, found := a.find(n, "Type", nil, n.Type); found {
+			return item, true
 		}
 
 	case *dst.CallExpr:
-		if item,found := a.find(n, "Fun", nil, n.Fun);found{
-			 return item,true
+		if item, found := a.find(n, "Fun", nil, n.Fun); found {
+			return item, true
 		}
-		if item,found := a.findList(n, "Args");found{
-			 return item,true
+		if item, found := a.findList(n, "Args"); found {
+			return item, true
 		}
 
 	case *dst.StarExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
 
 	case *dst.UnaryExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
 
 	case *dst.BinaryExpr:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Y", nil, n.Y);found{
-			 return item,true
+		if item, found := a.find(n, "Y", nil, n.Y); found {
+			return item, true
 		}
 
 	case *dst.KeyValueExpr:
-		if item,found := a.find(n, "Key", nil, n.Key);found{
-			 return item,true
+		if item, found := a.find(n, "Key", nil, n.Key); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Value", nil, n.Value);found{
-			 return item,true
+		if item, found := a.find(n, "Value", nil, n.Value); found {
+			return item, true
 		}
 
 	// Types
 	case *dst.ArrayType:
-		if item,found := a.find(n, "Len", nil, n.Len);found{
-			 return item,true
+		if item, found := a.find(n, "Len", nil, n.Len); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Elt", nil, n.Elt);found{
-			 return item,true
+		if item, found := a.find(n, "Elt", nil, n.Elt); found {
+			return item, true
 		}
 
 	case *dst.StructType:
-		if item,found := a.find(n, "Fields", nil, n.Fields);found{
-			 return item,true
+		if item, found := a.find(n, "Fields", nil, n.Fields); found {
+			return item, true
 		}
 
 	case *dst.FuncType:
-		if item,found := a.find(n, "Params", nil, n.Params);found{
-			 return item,true
+		if item, found := a.find(n, "Params", nil, n.Params); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Results", nil, n.Results);found{
-			 return item,true
+		if item, found := a.find(n, "Results", nil, n.Results); found {
+			return item, true
 		}
 
 	case *dst.InterfaceType:
-		if item,found := a.find(n, "Methods", nil, n.Methods);found{
-			 return item,true
+		if item, found := a.find(n, "Methods", nil, n.Methods); found {
+			return item, true
 		}
 
 	case *dst.MapType:
-		if item,found := a.find(n, "Key", nil, n.Key);found{
-			 return item,true
+		if item, found := a.find(n, "Key", nil, n.Key); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Value", nil, n.Value);found{
-			 return item,true
+		if item, found := a.find(n, "Value", nil, n.Value); found {
+			return item, true
 		}
 
 	case *dst.ChanType:
-		if item,found := a.find(n, "Value", nil, n.Value);found{
-			 return item,true
+		if item, found := a.find(n, "Value", nil, n.Value); found {
+			return item, true
 		}
 
 	// Statements
@@ -660,214 +664,214 @@ func (a *application) find(parent dst.Node, name string, iter *iterator, n dst.N
 		// nothing to do
 
 	case *dst.DeclStmt:
-		if item,found := a.find(n, "Decl", nil, n.Decl);found{
-			 return item,true
+		if item, found := a.find(n, "Decl", nil, n.Decl); found {
+			return item, true
 		}
 
 	case *dst.EmptyStmt:
 		// nothing to do
 
 	case *dst.LabeledStmt:
-		if item,found := a.find(n, "Label", nil, n.Label);found{
-			 return item,true
+		if item, found := a.find(n, "Label", nil, n.Label); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Stmt", nil, n.Stmt);found{
-			 return item,true
+		if item, found := a.find(n, "Stmt", nil, n.Stmt); found {
+			return item, true
 		}
 
 	case *dst.ExprStmt:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
 
 	case *dst.SendStmt:
-		if item,found := a.find(n, "Chan", nil, n.Chan);found{
-			 return item,true
+		if item, found := a.find(n, "Chan", nil, n.Chan); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Value", nil, n.Value);found{
-			 return item,true
+		if item, found := a.find(n, "Value", nil, n.Value); found {
+			return item, true
 		}
 
 	case *dst.IncDecStmt:
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
 
 	case *dst.AssignStmt:
-		if item,found := a.findList(n, "Lhs");found{
-			 return item,true
+		if item, found := a.findList(n, "Lhs"); found {
+			return item, true
 		}
-		if item,found := a.findList(n, "Rhs");found{
-			 return item,true
+		if item, found := a.findList(n, "Rhs"); found {
+			return item, true
 		}
 
 	case *dst.GoStmt:
-		if item,found := a.find(n, "Call", nil, n.Call);found{
-			 return item,true
+		if item, found := a.find(n, "Call", nil, n.Call); found {
+			return item, true
 		}
 
 	case *dst.DeferStmt:
-		if item,found := a.find(n, "Call", nil, n.Call);found{
-			 return item,true
+		if item, found := a.find(n, "Call", nil, n.Call); found {
+			return item, true
 		}
 
 	case *dst.ReturnStmt:
-		if item,found := a.findList(n, "Results");found{
-			 return item,true
+		if item, found := a.findList(n, "Results"); found {
+			return item, true
 		}
 
 	case *dst.BranchStmt:
-		if item,found := a.find(n, "Label", nil, n.Label);found{
-			 return item,true
+		if item, found := a.find(n, "Label", nil, n.Label); found {
+			return item, true
 		}
 
 	case *dst.BlockStmt:
-		if item,found := a.findList(n, "List");found{
-			 return item,true
+		if item, found := a.findList(n, "List"); found {
+			return item, true
 		}
 
 	case *dst.IfStmt:
-		if item,found := a.find(n, "Init", nil, n.Init);found{
-			 return item,true
+		if item, found := a.find(n, "Init", nil, n.Init); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Cond", nil, n.Cond);found{
-			 return item,true
+		if item, found := a.find(n, "Cond", nil, n.Cond); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Else", nil, n.Else);found{
-			 return item,true
+		if item, found := a.find(n, "Else", nil, n.Else); found {
+			return item, true
 		}
 
 	case *dst.CaseClause:
-		if item,found := a.findList(n, "List");found{
-			 return item,true
+		if item, found := a.findList(n, "List"); found {
+			return item, true
 		}
-		if item,found := a.findList(n, "Body");found{
-			 return item,true
+		if item, found := a.findList(n, "Body"); found {
+			return item, true
 		}
 
 	case *dst.SwitchStmt:
-		if item,found := a.find(n, "Init", nil, n.Init);found{
-			 return item,true
+		if item, found := a.find(n, "Init", nil, n.Init); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Tag", nil, n.Tag);found{
-			 return item,true
+		if item, found := a.find(n, "Tag", nil, n.Tag); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
 
 	case *dst.TypeSwitchStmt:
-		if item,found := a.find(n, "Init", nil, n.Init);found{
-			 return item,true
+		if item, found := a.find(n, "Init", nil, n.Init); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Assign", nil, n.Assign);found{
-			 return item,true
+		if item, found := a.find(n, "Assign", nil, n.Assign); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
 
 	case *dst.CommClause:
-		if item,found := a.find(n, "Comm", nil, n.Comm);found{
-			 return item,true
+		if item, found := a.find(n, "Comm", nil, n.Comm); found {
+			return item, true
 		}
-		if item,found := a.findList(n, "Body");found{
-			 return item,true
+		if item, found := a.findList(n, "Body"); found {
+			return item, true
 		}
 
 	case *dst.SelectStmt:
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
 
 	case *dst.ForStmt:
-		if item,found := a.find(n, "Init", nil, n.Init);found{
-			 return item,true
+		if item, found := a.find(n, "Init", nil, n.Init); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Cond", nil, n.Cond);found{
-			 return item,true
+		if item, found := a.find(n, "Cond", nil, n.Cond); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Post", nil, n.Post);found{
-			 return item,true
+		if item, found := a.find(n, "Post", nil, n.Post); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
 
 	case *dst.RangeStmt:
-		if item,found := a.find(n, "Key", nil, n.Key);found{
-			 return item,true
+		if item, found := a.find(n, "Key", nil, n.Key); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Value", nil, n.Value);found{
-			 return item,true
+		if item, found := a.find(n, "Value", nil, n.Value); found {
+			return item, true
 		}
-		if item,found := a.find(n, "X", nil, n.X);found{
-			 return item,true
+		if item, found := a.find(n, "X", nil, n.X); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
 
 	// Declarations
 	case *dst.ImportSpec:
-		if item,found := a.find(n, "Name", nil, n.Name);found{
-			 return item,true
+		if item, found := a.find(n, "Name", nil, n.Name); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Path", nil, n.Path);found{
-			 return item,true
+		if item, found := a.find(n, "Path", nil, n.Path); found {
+			return item, true
 		}
 
 	case *dst.ValueSpec:
-		if item,found := a.findList(n, "Names");found{
-			 return item,true
+		if item, found := a.findList(n, "Names"); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Type", nil, n.Type);found{
-			 return item,true
+		if item, found := a.find(n, "Type", nil, n.Type); found {
+			return item, true
 		}
-		if item,found := a.findList(n, "Values");found{
-			 return item,true
+		if item, found := a.findList(n, "Values"); found {
+			return item, true
 		}
 
 	case *dst.TypeSpec:
-		if item,found := a.find(n, "Name", nil, n.Name);found{
-			 return item,true
+		if item, found := a.find(n, "Name", nil, n.Name); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Type", nil, n.Type);found{
-			 return item,true
+		if item, found := a.find(n, "Type", nil, n.Type); found {
+			return item, true
 		}
 
 	case *dst.BadDecl:
 		// nothing to do
 
 	case *dst.GenDecl:
-		if item,found := a.findList(n, "Specs");found{
-			 return item,true
+		if item, found := a.findList(n, "Specs"); found {
+			return item, true
 		}
 
 	case *dst.FuncDecl:
-		if item,found := a.find(n, "Recv", nil, n.Recv);found{
-			 return item,true
+		if item, found := a.find(n, "Recv", nil, n.Recv); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Name", nil, n.Name);found{
-			 return item,true
+		if item, found := a.find(n, "Name", nil, n.Name); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Type", nil, n.Type);found{
-			 return item,true
+		if item, found := a.find(n, "Type", nil, n.Type); found {
+			return item, true
 		}
-		if item,found := a.find(n, "Body", nil, n.Body);found{
-			 return item,true
+		if item, found := a.find(n, "Body", nil, n.Body); found {
+			return item, true
 		}
 
 	// Files and packages
 	case *dst.File:
-		if item,found := a.find(n, "Name", nil, n.Name);found{
-			 return item,true
+		if item, found := a.find(n, "Name", nil, n.Name); found {
+			return item, true
 		}
-		if item,found := a.findList(n, "Decls");found{
-			 return item,true
+		if item, found := a.findList(n, "Decls"); found {
+			return item, true
 		}
 		// Don't walk n.Comments; they have either been walked already if
 		// they are Doc comments, or they can be easily walked explicitly.
@@ -880,16 +884,16 @@ func (a *application) find(parent dst.Node, name string, iter *iterator, n dst.N
 		}
 		sort.Strings(names)
 		for _, name := range names {
-			if item,found := a.find(n, name, nil, n.Files[name]);found{
-			 return item,true
-		}
+			if item, found := a.find(n, name, nil, n.Files[name]); found {
+				return item, true
+			}
 		}
 
 	default:
 		panic(fmt.Sprintf("Apply: unexpected node type %T", n))
 	}
 
-	return nil,false
+	return nil, false
 }
 
 // An iterator controls iteration over a slice of nodes.
@@ -921,10 +925,9 @@ func (a *application) applyList(parent dst.Node, name string) {
 	a.iter = saved
 }
 
-
 // 找到了 返回true,
 // 没有找到 返回false,
-func (a *application) findList(parent dst.Node, name string)(dst.Node,bool) {
+func (a *application) findList(parent dst.Node, name string) (dst.Node, bool) {
 	// avoid heap-allocating a new iterator for each findList call; reuse a.iter instead
 	saved := a.iter
 	a.iter.index = 0
@@ -942,12 +945,12 @@ func (a *application) findList(parent dst.Node, name string)(dst.Node,bool) {
 		}
 
 		a.iter.step = 1
-		if item,found := a.find(parent, name, &a.iter, x);found{
-			return item,true
+		if item, found := a.find(parent, name, &a.iter, x); found {
+			return item, true
 		}
 		a.iter.index += a.iter.step
 	}
 	a.iter = saved
 
-	return nil,false
+	return nil, false
 }
